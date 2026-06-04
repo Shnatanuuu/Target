@@ -515,7 +515,7 @@ with tab3:
 # ════════════════════════════════════════════════════════════════════════════
 with tab4:
     st.markdown("## 📣 Remark Intelligence")
-    st.markdown("Understand which promotions are driving shelf presence per brand, and how discounting spreads across the competitive landscape.")
+   
     st.markdown("---")
 
     # ── Campaign type breakdown table ─────────────────────────────────────────
