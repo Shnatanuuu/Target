@@ -225,7 +225,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "📊 Overview & Charts",
     "📁 Category × Brand Pricing",
     "🏷️ Brand Scorecard",
-    "📣 Campaign Intelligence",
+    "📣 Remark Intelligence",
 ])
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -514,7 +514,7 @@ with tab3:
 # TAB 4 — Campaign Intelligence
 # ════════════════════════════════════════════════════════════════════════════
 with tab4:
-    st.markdown("## 📣 Campaign Intelligence")
+    st.markdown("## 📣 Remark Intelligence")
     st.markdown("Understand which promotions are driving shelf presence per brand, and how discounting spreads across the competitive landscape.")
     st.markdown("---")
 
