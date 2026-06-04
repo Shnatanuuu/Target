@@ -477,13 +477,7 @@ with tab3:
         Categories=("Subcategory", "nunique"),
     ).reset_index()
 
-    camp_pct = (
-        df.groupby("Brand")["Campaign_Has"]
-        .apply(lambda x: round((x == "Has Campaign").sum() / len(x) * 100, 1))
-        .reset_index()
-    )
-    camp_pct.columns = ["Brand", "Campaign_Coverage_%"]
-    sc = sc.merge(camp_pct, on="Brand", how="left")
+
 
     for col in ["Avg_Price", "Avg_Rating", "Avg_Ranking"]:
         sc[col] = sc[col].round(2)
@@ -505,11 +499,7 @@ with tab3:
             "Best_Ranking":        st.column_config.NumberColumn("Best Rank #", format="%d"),
             "Avg_Ranking":         st.column_config.NumberColumn("Avg Rank #", format="%.1f"),
             "Categories":          st.column_config.NumberColumn("Categories Covered", format="%d"),
-            "Campaign_Coverage_%": st.column_config.ProgressColumn(
-                "Campaign Coverage %",
-                help="% of products running a campaign",
-                min_value=0, max_value=100, format="%.1f%%",
-            ),
+           
         },
         use_container_width=True,
         height=450,
