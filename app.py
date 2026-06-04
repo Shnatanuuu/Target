@@ -601,7 +601,7 @@ with tab4:
     st.plotly_chart(fig_camp_heat, use_container_width=True)
 
     most_active_brand = camp_heatmap.drop(columns=["No campaign"], errors="ignore").sum(axis=1).idxmax() if len(camp_heatmap.columns) > 1 else "N/A"
-    st.markdown(f'<div class="insight-box">📣 <b>{most_active_brand}</b> appears most across active remark types — they are the most aggressive promoter on shelf. Dark blue cells reveal high product concentration in a specific remark.</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="insight-box">📣 <b>{most_active_brand}</b> appears most across active remark types </div>', unsafe_allow_html=True)
 
     camp_heat_export = camp_heatmap.reset_index()
     export_csv(camp_heat_export, "remark_brand_heatmap.csv")
