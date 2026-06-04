@@ -562,7 +562,7 @@ with tab4:
 
     # ── Remark × Brand product count heatmap ─────────────────────────────────
     st.markdown('<p class="section-title">Remark × brand — product count heatmap</p>', unsafe_allow_html=True)
-    st.caption("Rows = Brands · Columns = Remark types (top, rotated −90°) · Cell value = # of products")
+    
 
     camp_heatmap = (
         df.groupby(["Brand", "Campaign_Type"])
