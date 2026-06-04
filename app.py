@@ -545,7 +545,7 @@ with tab4:
         column_config={
             "Campaign_Type": st.column_config.TextColumn("Remark", width="large"),
             "Products":      st.column_config.NumberColumn("# Products", format="%d"),
-            "Brands":        st.column_config.NumberColumn("Brands Using", format="%d"),
+            "Brands":        st.column_config.NumberColumn("Brands", format="%d"),
             "Avg_Price":     st.column_config.NumberColumn("Avg Price ($)", format="$%.1f"),
             "Avg_Rating":    st.column_config.NumberColumn("Avg Rating ⭐", format="%.2f"),
             "Avg_Ranking":   st.column_config.NumberColumn("Avg Rank #", format="%.1f"),
