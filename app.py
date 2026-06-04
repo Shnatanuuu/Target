@@ -147,15 +147,10 @@ with st.sidebar:
     }
     df_all.rename(columns={c: CANONICAL.get(c.lower(), c) for c in df_all.columns}, inplace=True)
 
-    # Add Country if missing (Target is US-centric, but user might have it)
-    if "Country" not in df_all.columns:
-        df_all["Country"] = "United States"
-
     # Parse Rating (text like "4.7 stars with 57 ratings") into numeric
     def parse_rating(text):
         if pd.isna(text):
             return np.nan
-        # Extract leading number (could be like "4.7" or "4")
         match = re.match(r"([\d.]+)", str(text))
         return float(match.group(1)) if match else np.nan
 
@@ -183,19 +178,8 @@ with st.sidebar:
 
     # ── Filters ───────────────────────────────────────────────────────────────
     st.markdown("**Filters**")
-    cats      = sorted(df_all["Subcategory"].dropna().unique().tolist())
-    brands    = sorted(df_all["Brand"].dropna().unique().tolist())
-    countries = sorted(df_all["Country"].dropna().unique().tolist())
-
-    # Country filter
-    coa, cob = st.columns(2)
-    if coa.button("✓ All", key="country_all", use_container_width=True):
-        st.session_state["sel_countries"] = countries
-    if cob.button("✕ Clear", key="country_clear", use_container_width=True):
-        st.session_state["sel_countries"] = []
-    if "sel_countries" not in st.session_state:
-        st.session_state["sel_countries"] = countries
-    sel_countries = st.multiselect("Country", countries, key="sel_countries")
+    cats   = sorted(df_all["Subcategory"].dropna().unique().tolist())
+    brands = sorted(df_all["Brand"].dropna().unique().tolist())
 
     # Subcategory filter
     ca, cb = st.columns(2)
@@ -219,8 +203,6 @@ with st.sidebar:
 
     # Apply filters
     df = df_all.copy()
-    if sel_countries:
-        df = df[df["Country"].isin(sel_countries)]
     if sel_cats:
         df = df[df["Subcategory"].isin(sel_cats)]
     if sel_brands:
@@ -295,30 +277,6 @@ with tab1:
         rating_summary = df.groupby("Brand")["Ratings"].agg(["mean", "min", "max", "count"]).round(2).reset_index()
         rating_summary.columns = ["Brand", "Avg_Rating", "Min_Rating", "Max_Rating", "Products"]
         export_csv(rating_summary, "rating_distribution.csv")
-
-    st.markdown("---")
-
-    # ── ROW 1b — Country distribution ────────────────────────────────────────
-    st.markdown('<p class="section-title">Products by country</p>', unsafe_allow_html=True)
-    country_counts = df["Country"].value_counts().reset_index()
-    country_counts.columns = ["Country", "Count"]
-    country_counts["Share"] = (country_counts["Count"] / country_counts["Count"].sum() * 100).round(1)
-
-    fig_country = px.bar(
-        country_counts, x="Country", y="Count", color="Country",
-        color_discrete_sequence=COLORS, text="Count",
-    )
-    fig_country.update_traces(textposition="outside")
-    fig_country.update_layout(
-        showlegend=False, height=300,
-        margin=dict(t=10, b=60, l=0, r=0),
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        yaxis=dict(gridcolor="#E8E4DE", title="# Products"),
-        xaxis=dict(tickangle=-90),
-        xaxis_title="",
-    )
-    st.plotly_chart(fig_country, use_container_width=True)
-    export_csv(country_counts, "products_by_country.csv")
 
     st.markdown("---")
 
@@ -401,15 +359,15 @@ with tab1:
         unsafe_allow_html=True,
     )
 
-    show_cols = [c for c in ["Ranking","Image_Src","Brand","Title","Subcategory","Country","Price","Ratings","Campaign_Type"] if c in df.columns]
+    show_cols = [c for c in ["Ranking","Image_Src","Brand","Title","Subcategory","Price","Ratings","Campaign_Type"] if c in df.columns]
     all_products = df.sort_values("Ranking", na_position="last")[show_cols].reset_index(drop=True)
     all_products.index += 1
 
     col_cfg = {
-        "Price":   st.column_config.NumberColumn("Price ($)", format="$%.2f"),
-        "Ratings": st.column_config.NumberColumn("Ratings ⭐", format="%.1f"),
-        "Ranking": st.column_config.NumberColumn("Rank #", format="%d"),
-        "Country": st.column_config.TextColumn("Country"),
+        "Price":         st.column_config.NumberColumn("Price ($)", format="$%.2f"),
+        "Ratings":       st.column_config.NumberColumn("Ratings ⭐", format="%.1f"),
+        "Ranking":       st.column_config.NumberColumn("Rank #", format="%d"),
+        "Campaign_Type": st.column_config.TextColumn("Remark"),
     }
     if "Image_Src" in all_products.columns:
         col_cfg["Image_Src"] = st.column_config.ImageColumn("Preview", help="Product thumbnail from retailer", width="small")
@@ -517,7 +475,6 @@ with tab3:
         Best_Ranking=("Ranking", "min"),
         Avg_Ranking=("Ranking", "mean"),
         Categories=("Subcategory", "nunique"),
-        Countries=("Country", "nunique"),
     ).reset_index()
 
     camp_pct = (
@@ -548,7 +505,6 @@ with tab3:
             "Best_Ranking":        st.column_config.NumberColumn("Best Rank #", format="%d"),
             "Avg_Ranking":         st.column_config.NumberColumn("Avg Rank #", format="%.1f"),
             "Categories":          st.column_config.NumberColumn("Categories Covered", format="%d"),
-            "Countries":           st.column_config.NumberColumn("Countries Present", format="%d"),
             "Campaign_Coverage_%": st.column_config.ProgressColumn(
                 "Campaign Coverage %",
                 help="% of products running a campaign",
@@ -569,11 +525,11 @@ with tab3:
 # ════════════════════════════════════════════════════════════════════════════
 with tab4:
     st.markdown("## 📣 Campaign Intelligence")
-    st.markdown("Understand which promotions (remarks) are driving shelf presence per brand, and how discounting spreads across the competitive landscape.")
+    st.markdown("Understand which promotions are driving shelf presence per brand, and how discounting spreads across the competitive landscape.")
     st.markdown("---")
 
     # ── Campaign type breakdown table ─────────────────────────────────────────
-    st.markdown('<p class="section-title">Campaign type breakdown — who is discounting, and how?</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Remark breakdown — who is discounting, and how?</p>', unsafe_allow_html=True)
 
     camp_summary = (
         df.groupby("Campaign_Type")
@@ -597,7 +553,7 @@ with tab4:
     st.dataframe(
         camp_summary,
         column_config={
-            "Campaign_Type": st.column_config.TextColumn("Campaign Type", width="large"),
+            "Campaign_Type": st.column_config.TextColumn("Remark", width="large"),
             "Products":      st.column_config.NumberColumn("# Products", format="%d"),
             "Brands":        st.column_config.NumberColumn("Brands Using", format="%d"),
             "Avg_Price":     st.column_config.NumberColumn("Avg Price ($)", format="$%.1f"),
@@ -610,13 +566,13 @@ with tab4:
         use_container_width=True,
         height=380,
     )
-    export_csv(camp_summary.reset_index(drop=True), "campaign_type_breakdown.csv")
+    export_csv(camp_summary.reset_index(drop=True), "remark_breakdown.csv")
 
     st.markdown("---")
 
-    # ── Campaign × Brand product count heatmap ────────────────────────────────
-    st.markdown('<p class="section-title">Campaign type × brand — product count heatmap</p>', unsafe_allow_html=True)
-    st.caption("Rows = Brands · Columns = Campaign types (top, rotated −90°) · Cell value = # of products")
+    # ── Remark × Brand product count heatmap ─────────────────────────────────
+    st.markdown('<p class="section-title">Remark × brand — product count heatmap</p>', unsafe_allow_html=True)
+    st.caption("Rows = Brands · Columns = Remark types (top, rotated −90°) · Cell value = # of products")
 
     camp_heatmap = (
         df.groupby(["Brand", "Campaign_Type"])
@@ -655,10 +611,10 @@ with tab4:
     st.plotly_chart(fig_camp_heat, use_container_width=True)
 
     most_active_brand = camp_heatmap.drop(columns=["No campaign"], errors="ignore").sum(axis=1).idxmax() if len(camp_heatmap.columns) > 1 else "N/A"
-    st.markdown(f'<div class="insight-box">📣 <b>{most_active_brand}</b> appears most across active campaign types — they are the most aggressive promoter on shelf. Dark blue cells reveal high product concentration in a specific campaign.</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="insight-box">📣 <b>{most_active_brand}</b> appears most across active remark types — they are the most aggressive promoter on shelf. Dark blue cells reveal high product concentration in a specific remark.</div>', unsafe_allow_html=True)
 
     camp_heat_export = camp_heatmap.reset_index()
-    export_csv(camp_heat_export, "campaign_brand_heatmap.csv")
+    export_csv(camp_heat_export, "remark_brand_heatmap.csv")
 
     st.markdown("---")
     st.markdown('<p style="font-size:12px;color:#888">Filtered by sidebar selections.</p>', unsafe_allow_html=True)
