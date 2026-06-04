@@ -519,7 +519,7 @@ with tab4:
     st.markdown("---")
 
     # ── Campaign type breakdown table ─────────────────────────────────────────
-    st.markdown('<p class="section-title">Remark breakdown — who is discounting, and how?</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Remark breakdown</p>', unsafe_allow_html=True)
 
     camp_summary = (
         df.groupby("Campaign_Type")
